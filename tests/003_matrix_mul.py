@@ -1,13 +1,14 @@
 
 import torch
 from launch_config import launch_config, calc_config
-from torch_cuda import TorchCUDA
+from cupy_cuda import CupyCUDA
+
 
 device = torch.device("cuda")
 torch.set_default_device(device)
 
-tc = TorchCUDA()
-tc.compile_file("CUDA/003_matrix_mul.cu", ("matrix_mul",))
+cc = CupyCUDA()
+cc.compile_file("CUDA/003_matrix_mul.cu", ("matrix_mul",))
 
 dtype = torch.float32
 torch.set_default_dtype(dtype)
@@ -24,9 +25,9 @@ b = torch.rand(size_b)
 
 out = torch.empty(size_out)
 
-config = calc_config(size_out)
+grid, block = calc_config(size_out)
 args = (a.data_ptr(), b.data_ptr(), out.data_ptr(), *dims)
-tc.launch("matrix_mul", config, *args)
+cc.launch("matrix_mul", grid, block, args)
 
 print(a)
 print(b)

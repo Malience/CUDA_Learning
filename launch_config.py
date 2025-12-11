@@ -6,27 +6,9 @@ MAX_THREADS = 512 # 1024
 # MAX_BLOCK_SIZE = (1024, 1024, 64)
 WARP_SIZE = 32
 
-# Predefined block shapes (total threads ≤ MAX_THREADS, multiple of WARP_SIZE)
-# Ordered by preference (higher total threads first, then aspect ratio close to square)
 
-BLOCK_CANDIDATES_3D = [
-    (8, 8, 8),      # 512
-    (16, 8, 4),     # 512
-    (32, 4, 4),     # 512
-    (64, 4, 2),     # 512
-    (128, 2, 2),    # 512
-    (256, 2, 1),    # 512
-    (512, 1, 1),    # 512
-    (16, 4, 4),     # 256
-    (32, 4, 2),     # 256
-    (64, 2, 2),     # 256
-    (128, 2, 1),    # 256
-    (256, 1, 1),    # 256
-]
-
-
-def launch_config(grid: Union[Tuple, int] = None, block: Union[Tuple, int] = None) -> LaunchConfig:
-    return LaunchConfig(grid=grid, block=block)
+def launch_config(grid: Union[Tuple, int] = None, block: Union[Tuple, int] = None, shared_memory: int = 0) -> LaunchConfig:
+    return LaunchConfig(grid=grid, block=block, shmem_size=shared_memory)
 
 def _nearest_pow_2(value: int) -> int:
     if value == 0: return 1
@@ -50,36 +32,6 @@ def _calc_single(size: int) -> Tuple[int, int]:
     
     # Otherwise the block size is set to the maximum and we calculate the grid
     return _calc_grid(size, MAX_THREADS), MAX_THREADS
-
-BLOCK_CANDIDATES_2D = [
-    (512, 1),   # 512
-    (256, 1),   # 256
-    (128, 1),   # 128
-    (64, 1),    # 64
-    (32, 1),    # 32
-
-    (256, 2),   # 512
-    (128, 2),   # 256
-    (64, 2),    # 128
-    (32, 2),    # 64
-    (16, 2),    # 32
-
-    (128, 4),   # 512
-    (64, 4),    # 256
-    (32, 4),    # 128
-    (16, 4),    # 64
-    (8, 4),     # 32
-
-    (64, 8),    # 512
-    (32, 8),    # 256
-    (16, 8),    # 128
-    (8, 8),     # 64
-
-    (32, 16),   # 512
-    (16, 16),   # 256
-
-    (32, 32),   # 512
-]
 
 def _calc_double(x: int, y: int) -> Tuple[Tuple[int, int], Tuple[int, int]]:
     if x < 1: x = 1
@@ -137,7 +89,7 @@ def _calc_triple(x: int, y: int, z: int) -> Tuple[Tuple[int, int], Tuple[int, in
     return (gx, gy, gz), (wx, wy, wz)
 
 
-def calc_config(size: Union[Tuple, int]) -> LaunchConfig:
+def calc_config(size: Union[Tuple, int]):
     grid, block = None, None
     if type(size) == int:
         grid, block = _calc_single(size)
@@ -154,4 +106,23 @@ def calc_config(size: Union[Tuple, int]) -> LaunchConfig:
     else:
         raise Exception("ERROR: Invalid shape type, must be an int or a tuple")
     
-    return LaunchConfig(grid=grid, block=block)
+    return grid, block
+
+# def calc_config(size: Union[Tuple, int], shared_memory: int = 0) -> LaunchConfig:
+#     grid, block = None, None
+#     if type(size) == int:
+#         grid, block = _calc_single(size)
+#     elif type(size) == tuple:
+#         dim = len(size)
+#         if dim < 1 or dim > 3:
+#             raise Exception(f"ERROR: Invalid dimensions: {dim}")
+#         if dim == 1:
+#             grid, block = _calc_single(size[0])
+#         elif dim == 2:
+#             grid, block = _calc_double(size[0], size[1])
+#         else:
+#             grid, block = _calc_triple(size[0], size[1], size[2])
+#     else:
+#         raise Exception("ERROR: Invalid shape type, must be an int or a tuple")
+    
+#     return LaunchConfig(grid=grid, block=block, shmem_size=shared_memory)

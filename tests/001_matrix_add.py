@@ -1,10 +1,10 @@
 
 import torch
 import launch_config
-from torch_cuda import TorchCUDA
+from cupy_cuda import CupyCUDA
 
-tc = TorchCUDA()
-tc.compile_file("CUDA/001_matrix_add.cu", ("matrix_add",))
+cc = CupyCUDA()
+cc.compile_file("CUDA/001_matrix_add.cu", ("matrix_add",))
 
 dtype = torch.float32
 
@@ -21,15 +21,16 @@ out = torch.empty_like(x)
 # grid = (4, 4)
 # config = launch_config.launch_config(grid=grid, block=block)
 
-config = launch_config.calc_config(size)
+grid, block = launch_config.calc_config(size)
 args = (x.data_ptr(), y.data_ptr(), out.data_ptr(), *size)
 
-tc.launch("matrix_add", config, *args)
+cc.launch("matrix_add", grid, block, args)
 
 # check result
 assert torch.allclose(out, x + y)
-print("Test passed successfully!")
 
 print(x)
 print(y)
 print(out)
+
+print("Test passed successfully!")

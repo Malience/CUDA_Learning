@@ -16,3 +16,8 @@ Simple repository for learning CUDA programming. The ultimate goal is to impleme
 - Implemented a basic python environment using cuda.base. I have implemented a simple object to compile and run CUDA code in python. (check torch_cuda.py)
 - Added a robust semi-optimized grid+block calculator to allow for randomized data sizes. Can be somewhat inefficient with wierd inputs, but it prevents invalid values and gauruntees the block will be divisible by the usual GPU WARP size.
 - With those I finished some simple linear algebra examples to brush the rust off.
+
+### Session 2 ==> test_cupy_cuda
+
+- Short session, had to completely rebase onto cupy in order to have access to constant memory
+- Tested shared and constant memory

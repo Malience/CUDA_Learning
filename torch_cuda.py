@@ -46,9 +46,17 @@ class TorchCUDA:
         
         self.compile(code, name_expressions)
 
+
     def launch(self, kernel: str, config: LaunchConfig, *args):
         if kernel not in self.modules:
             raise Exception("Kernel not found!")
 
         ker = self.modules[kernel].get_kernel(kernel)
         launch(self.stream, config, ker, *args)
+
+
+    def get_global_ptr(self, kernel:str, var: str):
+        if kernel not in self.modules:
+            raise Exception("Kernel not found!")
+        
+        return self.modules[kernel].get_global(var)
